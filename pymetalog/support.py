@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pytensor.tensor as pt
 
 
 def MLprobs(x_old, step_len):
@@ -397,3 +398,75 @@ def pdfMetalog_density(m, t, y):
         x = (x * (1 + np.exp(M)) ** 2) / ((bounds[1] - bounds[0]) * np.exp(M))
 
     return x
+
+
+def quantileMetalog_pt(a, y, t, bounds, boundedness="b"):
+    y = pt.clip(y, 1e-5, 1 - 1e-5)
+    f = y - 0.5
+    l = pt.log(y / (1 - y))
+
+    x = a[0] + a[1] * l
+    if t > 2:
+        x += a[2] * f * l
+    if t > 3:
+        x += a[3] * f
+
+    o = 2
+    e = 2
+
+    if t > 4:
+        for i in range(5, t + 1):
+            idx = i - 1
+            if (i % 2) == 0:
+                x += a[idx] * (f ** e) * l
+                e += 1
+            else:
+                x += a[idx] * (f ** o)
+                o += 1
+
+    if boundedness == "sl":
+        x = bounds[0] + pt.exp(x)
+    elif boundedness == "su":
+        x = bounds[1] - pt.exp(-x)
+    elif boundedness == "b":
+        x = (bounds[0] + bounds[1] * pt.exp(x)) / (1 + pt.exp(x))
+
+    return x
+
+def pdfMetalog_pt(a, y, t, bounds, boundedness="b"):
+    y = pt.clip(y, 1e-5, 1 - 1e-5)
+    d = y * (1 - y)
+    f = y - 0.5
+    l = pt.log(y / (1 - y))
+
+    x = a[1] / d
+    x += pt.switch(pt.and_(pt.shape(a)[0] > 2, pt.neq(a[2], 0)), a[2] * ((f / d) + l), 0.0)
+    if t > 3:
+        x += a[3]
+
+    e = 1
+    o = 1
+
+    if t > 4:
+        for i in range(5, t + 1):
+            idx = i - 1
+            if (i % 2) != 0:
+                x += (o + 1) * a[idx] * f ** o
+                o += 1
+            else:
+                x += a[idx] * (((f ** (e + 1)) / d) + (e + 1) * (f ** e) * l)
+                e += 1
+
+    x = x ** (-1)
+
+    if boundedness != "u":
+        M = quantileMetalog_pt(a, y, t, bounds, boundedness="u")
+
+    if boundedness == "sl":
+        x = x * pt.exp(-M)
+    elif boundedness == "su":
+        x = x * pt.exp(M)
+    elif boundedness == "b":
+        x = (x * (1 + pt.exp(M)) ** 2) / ((bounds[1] - bounds[0]) * pt.exp(M))
+
+    return pt.clip(x, 1e-10, 1e10)
