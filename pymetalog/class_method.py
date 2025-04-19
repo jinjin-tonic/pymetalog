@@ -344,7 +344,7 @@ def qmetalog(m, y, term=3):
     return s
 
 
-def plot(m):
+def plot(m, figsize=(12, 8)):
     """Plots PDF and Quantile panels for each term of fitted metalog m.
 
     Args:
@@ -383,8 +383,8 @@ def plot(m):
                 }
             )
 
-            InitalResults = InitalResults.append(
-                pd.DataFrame(data=TempResults), ignore_index=True
+            InitalResults = pd.concat([InitalResults,
+                pd.DataFrame(data=TempResults)], ignore_index=True
             )
 
     # PDF plot
@@ -399,7 +399,7 @@ def plot(m):
     else:
         ncol = 4
 
-    pdf_fig, axes = plt.subplots(nrow, ncol, sharey="col", squeeze=False)
+    pdf_fig, axes = plt.subplots(nrow, ncol, sharey="col", squeeze=False, figsize=figsize)
 
     for t in range(nterms):
         data = InitalResults[
@@ -438,7 +438,7 @@ def plot(m):
     else:
         ncol = 4
 
-    cdf_fig, axes = plt.subplots(nrow, ncol, sharey="col", squeeze=False)
+    cdf_fig, axes = plt.subplots(nrow, ncol, sharey="col", squeeze=False, figsize=figsize)
 
     for t in range(nterms):
         data = InitalResults[

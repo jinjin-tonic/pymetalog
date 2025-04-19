@@ -254,7 +254,7 @@ def a_vector_OLS_and_LP(
     Z = np.column_stack(
         (
             np.array(m_dict["dataValues"]["z"]),
-            np.repeat(m_dict["dataValues"]["z"], ncols - 1).reshape(
+            np.repeat(m_dict["dataValues"]["z"], ncols - 1).values.reshape(
                 len(m_dict["dataValues"]["z"]), ncols - 1
             ),
         )

@@ -40,7 +40,7 @@ def pdf_quantile_builder(temp, y, term_limit, bounds, boundedness):
             - q_dict['y']: (:obj:`numpy.ndarray` of type float): Array of bin widths specified for the pdfs/quantiles.
                 * Influenced by `boundedness` parameter
                     - `boundedness` = 'sl': Inserts `bounds`[0] at the front of the quantile array
-                    - `boundedness` = 'su': Appends `bounds`[1] to the end of the quantile array
+                    - `c` = 'su': Appends `bounds`[1] to the end of the quantile array
                     - `boundedness` = 'b': Inserts `bounds`[0] at the front of the quantile array
                                             and appends `bounds`[1] to the end of the quantile array
 
